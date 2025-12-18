@@ -26,9 +26,9 @@ import shutil
 from .superpower_util import load_abilities, get_daily_superpower  # 新增导入
 
 @register(
-    "steam_status_monitor_shell",
+    "steam_status_monitor_V2",
     "Shell",
-    "Steam状态监控插件",
+    "Steam状态监控插件V2版",
     "2.2.5",
     "https://github.com/1592363624/astrbot_plugin_steam_status_monitor_shell"
 )
@@ -459,11 +459,11 @@ class SteamStatusMonitorV2(Star):
             "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/"
             f"?key={self.API_KEY}&steamids={steam_id}"
         )
-        delay = 1
+        delay = 5
         retry = retry if retry is not None else self.RETRY_TIMES
         for attempt in range(retry):
             try:
-                async with httpx.AsyncClient(timeout=15) as client:
+                async with httpx.AsyncClient(timeout=30) as client:
                     resp = await client.get(url)
                     if resp.status_code != 200:
                         raise Exception(f"HTTP {resp.status_code}")
@@ -509,12 +509,16 @@ class SteamStatusMonitorV2(Star):
             return fallback_name or "未知游戏"
         gid = str(gameid)
         if gid in self._game_name_cache:
-            return self._game_name_cache[gid]
+            cached = self._game_name_cache[gid]
+            # 如果缓存中是元组 (中文名, 英文名)，则只提取第一个元素（中文名）
+            if isinstance(cached, tuple):
+                return cached[0]
+            return cached
         # 优先查中文名（l=schinese），再查英文名（l=en）
         url_zh = f"https://store.steampowered.com/api/appdetails?appids={gid}&l=schinese"
         url_en = f"https://store.steampowered.com/api/appdetails?appids={gid}&l=en"
         try:
-            async with httpx.AsyncClient(timeout=10) as client:
+            async with httpx.AsyncClient(timeout=30) as client:
                 # 查中文名
                 resp_zh = await client.get(url_zh)
                 data_zh = resp_zh.json()
@@ -553,7 +557,7 @@ class SteamStatusMonitorV2(Star):
         url_en = f"https://store.steampowered.com/api/appdetails?appids={gid}&l=en"
         name_zh = name_en = fallback_name or "未知游戏"
         try:
-            async with httpx.AsyncClient(timeout=10) as client:
+            async with httpx.AsyncClient(timeout=30) as client:
                 resp_zh = await client.get(url_zh)
                 data_zh = resp_zh.json()
                 info_zh = data_zh.get(gid, {}).get("data", {})
@@ -594,7 +598,7 @@ class SteamStatusMonitorV2(Star):
         # 多区域尝试
         lang_list = ["schinese", "japanese", "en"]
         try:
-            async with httpx.AsyncClient(timeout=10) as client:
+            async with httpx.AsyncClient(timeout=30) as client:
                 for lang in lang_list:
                     url = f"https://store.steampowered.com/api/appdetails?appids={gid}&l={lang}"
                     resp = await client.get(url)
@@ -1507,7 +1511,7 @@ class SteamStatusMonitorV2(Star):
             return None
         url = f"https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid={gameid}"
         try:
-            async with httpx.AsyncClient(timeout=10) as client:
+            async with httpx.AsyncClient(timeout=30) as client:
                 resp = await client.get(url)
                 if resp.status_code == 200:
                     data = resp.json()
