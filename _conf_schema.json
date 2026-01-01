@@ -39,5 +39,11 @@
     "type": "bool",
     "hint": "关闭时失败不再自动加入成就黑名单",
     "default": false
+  },
+  "card_update_interval_sec": {
+    "description": "群名片自动更新间隔（秒）",
+    "type": "int",
+    "hint": "定时更新绑定的QQ群名片，默认86400秒（24小时）",
+    "default": 86400
   }
 }

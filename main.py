@@ -378,8 +378,10 @@ class SteamStatusMonitorV2(Star):
             except Exception as e:
                 logger.error(f"[SteamStatusMonitor] 群名片更新循环异常: {e}")
             
-            # 每天更新一次
-            await asyncio.sleep(86400)
+            # 每天更新一次（默认）或使用配置
+            interval = getattr(self, 'card_update_interval_sec', 86400)
+            if interval <= 0: interval = 86400
+            await asyncio.sleep(interval)
 
     def __init__(self, context: Context, config=None):
         # 插件运行状态标志，重启后自动丢失
@@ -436,6 +438,7 @@ class SteamStatusMonitorV2(Star):
         self.detailed_poll_log = self.config.get('detailed_poll_log', True)
         self.config.setdefault('enable_failure_blacklist', False)
         self.enable_failure_blacklist = self.config.get('enable_failure_blacklist', False)
+        self.card_update_interval_sec = self.config.get('card_update_interval_sec', 86400)
         
         # 数据持久化目录
         self.data_dir = str(astrbot.core.star.StarTools.get_data_dir("steam_status_monitor"))
@@ -1179,7 +1182,8 @@ class SteamStatusMonitorV2(Star):
             "/steam list - 列出所有玩家状态\n"
             "/steam config - 查看当前配置\n"
             "/steam set [参数] [值] - 设置配置参数\n"
-            "/steam addid [SteamID] - 添加SteamID\n"
+            "/steam addid [SteamID] [QQ号] - 添加监控，可绑定QQ以显示名片\n"
+            "/steam bind [SteamID] [QQ号] - 为已添加的SteamID绑定QQ号\n"
             "/steam delid [SteamID] - 删除SteamID\n"
             "/steam openbox [SteamID] - 查看指定SteamID的全部信息\n"
             "/steam rs - 清除状态并初始化\n"
