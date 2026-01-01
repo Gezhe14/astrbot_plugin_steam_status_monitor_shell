@@ -26,11 +26,11 @@ import shutil
 from .superpower_util import load_abilities, get_daily_superpower  # 新增导入
 
 @register(
-    "steam_status_monitor_V2",
+    "steam_status_monitor_shell",
     "Shell",
-    "Steam状态监控插件V2版",
+    "Steam状态监控插件",
     "2.2.5",
-    "https://github.com/1592363624/astrbot_plugin_steam_status_monitor_shell"
+    "https://github.com/Gezhe14/astrbot_plugin_steam_status_monitor_shell"
 )
 class SteamStatusMonitorV2(Star):
     def _get_group_data_path(self, group_id, key):
