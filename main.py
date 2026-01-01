@@ -29,7 +29,7 @@ from .superpower_util import load_abilities, get_daily_superpower  # 新增导�
     "steam_status_monitor_shell",
     "Shell",
     "Steam状态监控插件",
-    "2.2.5",
+    "2.2.6",
     "https://github.com/Gezhe14/astrbot_plugin_steam_status_monitor_shell"
 )
 class SteamStatusMonitorV2(Star):
