@@ -369,6 +369,10 @@ def render_game_end_image(player_name, avatar_path, game_name, cover_path, end_t
 
 # render_game_end 里 await get_cover_path
 async def render_game_end(data_dir, steamid, player_name, avatar_url, gameid, game_name, end_time_str, tip_text, duration_h, sgdb_api_key=None, font_path=None, sgdb_game_name=None, appid=None):
+    # 强制修正名称：如果包含 (Steam昵称) 后缀，则去除
+    if " (" in player_name and player_name.endswith(")"):
+        player_name = player_name.rsplit(" (", 1)[0]
+        
     avatar_path = get_avatar_path(data_dir, steamid, avatar_url)
     cover_path = await get_cover_path(data_dir, gameid, game_name, sgdb_api_key=sgdb_api_key, sgdb_game_name=sgdb_game_name, appid=appid)
     img = render_game_end_image(player_name, avatar_path, game_name, cover_path, end_time_str, tip_text, duration_h, font_path=font_path)
