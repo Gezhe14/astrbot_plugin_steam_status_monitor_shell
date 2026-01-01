@@ -51,6 +51,7 @@
 - `/steam on` 启动本群Steam状态监控
 - `/steam off` 停止本群Steam状态监控
 - `/steam list` 列出本群所有玩家当前状态
+- `/steam check` 立即手动检测本群并推送变更
 - `/steam alllist` 列出所有群聊分组及玩家状态
 - `/steam config` 查看当前插件配置
 - `/steam set [参数] [值]` 设置配置参数（如 `/steam set poll_interval_sec 30`）

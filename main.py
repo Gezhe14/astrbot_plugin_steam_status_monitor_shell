@@ -1172,6 +1172,27 @@ class SteamStatusMonitorV2(Star):
         async for result in handle_steam_list(self, event, group_id=group_id, font_path=font_path):
             yield result
 
+    @filter.command("steam check")
+    async def steam_check(self, event: AstrMessageEvent):
+        '''立即手动检测本群Steam状态变更'''
+        group_id = str(event.get_group_id()) if hasattr(event, 'get_group_id') else 'default'
+        if not self.API_KEY:
+            yield event.plain_result("未配置 Steam API Key。")
+            return
+        
+        steam_ids = self.group_steam_ids.get(group_id, [])
+        if not steam_ids:
+            yield event.plain_result("本群未设置监控的 SteamID。")
+            return
+
+        # 立即触发检测
+        yield event.plain_result("正在立即检测Steam状态，请稍候...")
+        try:
+            await self.check_status_change(group_id, is_manual=True)
+        except Exception as e:
+            logger.error(f"手动检测失败: {e}")
+            yield event.plain_result(f"检测过程出现异常: {e}")
+
     @filter.permission_type(filter.PermissionType.ADMIN)
     @filter.command("steam config")
     async def steam_config(self, event: AstrMessageEvent):
@@ -1253,6 +1274,7 @@ class SteamStatusMonitorV2(Star):
             "/steam on - 启动监控\n"
             "/steam off - 停止监控\n"
             "/steam list - 列出所有玩家状态\n"
+            "/steam check - 立即手动检测本群并推送变更\n"
             "/steam config - 查看当前配置\n"
             "/steam set [参数] [值] - 设置配置参数\n"
             "/steam addid [SteamID] [QQ号] - 添加监控，可绑定QQ以显示名片\n"
@@ -1556,7 +1578,7 @@ class SteamStatusMonitorV2(Star):
             if sid in group_pending:
                 group_pending[sid].pop(gameid, None)
 
-    async def check_status_change(self, group_id, single_sid=None, status_override=None, poll_level=None):
+    async def check_status_change(self, group_id, single_sid=None, status_override=None, poll_level=None, is_manual=False):
         '''轮询检测玩家状态变更并推送通知（分群，支持单个sid）
         返回精简日志字符串，不直接打印日志'''
         now = int(time.time())
@@ -1801,7 +1823,8 @@ class SteamStatusMonitorV2(Star):
                 continue
             for gameid in list(pending_quit[sid].keys()):
                 info = pending_quit[sid][gameid]
-                if now - info["quit_time"] >= 180 and not info.get("notified"):
+                # 手动检测时忽略3分钟延迟
+                if (now - info["quit_time"] >= 180 or is_manual) and not info.get("notified"):
                     info["notified"] = True
                     duration_min = info.get("duration_min", 0)
                     # 优化时间显示
